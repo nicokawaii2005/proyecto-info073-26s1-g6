@@ -115,6 +115,11 @@ def refrescar_tablero(screen, tablero):
     # por encima de lo que estaba anteriormente.
     screen.fill("gray30")
 
+    #Definicion de diseños de elementos en el tablero
+    wall = pygame.image.load(r"C:\Users\nicol\Downloads\wall.jpeg").convert()
+    floor = pygame.image.load(r"C:\Users\nicol\Downloads\floor.jpeg").convert()
+    apple = pygame.image.load(r"C:\Users\nicol\Downloads\apple.png").convert_alpha()
+
     # Podemos calcular el tamaño en pixeles que tendrá cada
     # casilla al dividir tanto la altura de la pantalla (screen.get_height())
     # como el ancho (screen.get_width()) por la cantidad de filas y columnas respectivamente.
@@ -135,11 +140,7 @@ def refrescar_tablero(screen, tablero):
             if tablero[i][j] == OBSTACULO:
                 # Dibuja un rectángulo en la posición (pos_x, pos_y) y que sea
                 # de tamaño (ancho_elem, alto_elem) y color negro.
-                pygame.draw.rect(
-                    screen,
-                    "black",
-                    pygame.Rect((pos_x, pos_y), (ancho_elem, alto_elem)),
-                )
+                screen.blit(wall, (pos_x, pos_y))
             elif tablero[i][j] == JUGADOR:
                 # Dibujamos un círculo verde en la posición (pos_x + radio, pos_y + radio),
                 # con un radio definido por la variable "radio" (ancho_elem / 2).
@@ -150,17 +151,10 @@ def refrescar_tablero(screen, tablero):
                     radio,
                 )
             elif tablero[i][j] == MANZANA:
-                pygame.draw.rect(
-                    screen,
-                    "red",
-                    # Acá reducimos el tamaño del rectángulo
-                    # para identificarlo más fácilmente
-                    pygame.Rect(
-                        (pos_x + 10, pos_y + 10),
-                        (ancho_elem - 20, alto_elem - 20),
-                    ),
-                )
-
+                screen.blit(floor, (pos_x, pos_y))
+                screen.blit(apple, (pos_x, pos_y))
+            else:
+                screen.blit(floor, (pos_x, pos_y))
             # Estamos recorriendo los píxeles de la pantalla, por lo que
             # debemos sumar el ancho y altura en pixeles de cada elemento que
             # ya hayamos recorrido para avanzar al siguiente.
