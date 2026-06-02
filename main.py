@@ -360,7 +360,7 @@ def main():
             # Si es que se presiona alguna tecla.
             if evento.type == pygame.KEYDOWN:
                 if estado == ESTADO_INICIO:
-                    if evento.key == pygame.K_SPACE:
+                    if evento.key == pygame.K_RETURN:
                         tablero, pos_jugador = reiniciar()
                         direccion = (0, 0)
                         # Obtiene tiempo en milisegundos
