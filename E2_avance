@@ -1,5 +1,8 @@
+Nuevos avances:
 - Avance en pantallas de inicio, instrucciones, derrota, victoria.
-- Se añadió musica al videojuego
-- Efectos musicales
-- Diseño de obstaculos y jugador
-- Cambios menores en el codigo
+- Se añadió musica al videojuego.
+- Efectos de sonido.
+- Sistema de generación de múltiples obstáculos de forma aleatoria.
+- Función nueva: escalar_sprite. Ajusta el tamaño de imagen de los sprites junto al de las casillas; evita que se tapen o no se muestren.
+- Diseño de fondo, obstaculos y jugador.
+- Cambios menores en el codigo.
