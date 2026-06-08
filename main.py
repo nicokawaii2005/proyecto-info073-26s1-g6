@@ -28,7 +28,7 @@ RETRASO = 200
 VACIO = 0
 OBSTACULO = 1
 JUGADOR = 2
-BASURA = 3
+MANZANA = 3
 
 # Tamaño del tablero
 # Si se cambian estas constantes, se debe modificar la definición
@@ -111,7 +111,7 @@ def poblar_tablero(tablero):
     """
     for i in range (CANT_OBSTACULOS):
         aparecer_aleatorio(tablero, OBSTACULO, incluir_borde=False)
-    aparecer_aleatorio(tablero, BASURA)
+    aparecer_aleatorio(tablero, MANZANA)
 
 def escalar_sprite(imagen, ancho_elem, alto_elem):
     # Esta función ajusta una imagen al tamaño de las casillas del tablero.
@@ -121,7 +121,7 @@ def escalar_sprite(imagen, ancho_elem, alto_elem):
         (int(ancho_elem), int(alto_elem))
     )
 
-def refrescar_tablero(screen, tablero):
+def refrescar_tablero(screen, tablero, img_jugador):
     """
     Dibuja el estado actual del tablero en la pantalla.
 
@@ -136,8 +136,8 @@ def refrescar_tablero(screen, tablero):
 
     #Definicion de diseños de elementos en el tablero
     wall = pygame.image.load("assets/sprites/wall.jpeg").convert()
-    floor = pygame.image.load("assets/sprites/floor.jpeg").convert()
-    basura = pygame.image.load("assets/sprites/basura.png").convert_alpha()
+    floor = pygame.image.load("assets/sprites/floor.jpg").convert()
+    apple = pygame.image.load("assets/sprites/basura.png").convert_alpha()
 
     # Podemos calcular el tamaño en pixeles que tendrá cada
     # casilla al dividir tanto la altura de la pantalla (screen.get_height())
@@ -156,7 +156,8 @@ def refrescar_tablero(screen, tablero):
     # las imágenes de algunos objetos dentro del juego)
     wall = escalar_sprite(wall, ancho_elem, alto_elem)
     floor = escalar_sprite(floor, ancho_elem, alto_elem)
-    basura = escalar_sprite(basura, ancho_elem, alto_elem)
+    apple = escalar_sprite(apple, ancho_elem, alto_elem)
+    img_jugador = escalar_sprite(img_jugador, ancho_elem, alto_elem)
 
     # Posición en eje "y" en unidad de píxeles.
     pos_y = 0
@@ -172,15 +173,11 @@ def refrescar_tablero(screen, tablero):
             elif tablero[i][j] == JUGADOR:
                 # Dibujamos un círculo verde en la posición (pos_x + radio, pos_y + radio),
                 # con un radio definido por la variable "radio" (ancho_elem / 2).
-                pygame.draw.circle(
-                    screen,
-                    "green",
-                    (pos_x + radio, pos_y + radio),
-                    radio,
-                )
-            elif tablero[i][j] == BASURA:
+                screen.blit(floor, (pos_x, pos_y))
+                screen.blit(img_jugador, (pos_x, pos_y))
+            elif tablero[i][j] == MANZANA:
                 screen.blit(floor, [pos_x, pos_y])
-                screen.blit(basura, [pos_x, pos_y])
+                screen.blit(apple, [pos_x, pos_y])
             else:
                 screen.blit(floor, [pos_x, pos_y])
             # Estamos recorriendo los píxeles de la pantalla, por lo que
@@ -268,7 +265,7 @@ def avanzar(tablero, pos_jugador, direccion, sonido_manzana):
     if pos_elem == OBSTACULO:
         return "derrota", pos_jugador
 
-    if pos_elem == BASURA:
+    if pos_elem == MANZANA:
         sonido_manzana.play() # Reproduce sonido de la manzana al comer
         return "victoria", (ind_nueva_col, ind_nueva_fila)
 
@@ -378,10 +375,17 @@ def main():
     mostrar_pantalla(screen, PANTALLA_INICIO)
     
     # Sonido de manzana y soundtrack
-    sonido_basura = pygame.mixer.Sound("assets/sounds/basura_eat.mp3")
+    sonido_manzana = pygame.mixer.Sound("assets/sounds/apple_eat.mp3")
     pygame.mixer.music.load ("assets/music/main_track.mp3")
     pygame.mixer.music.play (-1) # Ejecutamos en bucle infinito
-    
+    # Texturas del jugador
+    img_arriba = pygame.image.load("assets/sprites/rana_arriba.png").convert_alpha()
+    img_abajo = pygame.image.load("assets/sprites/rana_abajo.png").convert_alpha()
+    img_izquierda = pygame.image.load("assets/sprites/rana_izquierda.png").convert_alpha()
+    img_derecha = pygame.image.load("assets/sprites/rana_derecha.png").convert_alpha()
+
+    img_jugador = img_arriba
+
     # Este es el bucle principal del juego, todo lo que sucede en el juego
     # está aquí.
     while running:
@@ -400,7 +404,7 @@ def main():
                         # Obtiene tiempo en milisegundos
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero)
+                        refrescar_tablero(screen, tablero, img_jugador)
                     elif evento.key == pygame.K_i:
                         estado = ESTADO_INSTRUCCIONES
                         mostrar_pantalla(screen, PANTALLA_INSTRUCCIONES)
@@ -415,7 +419,7 @@ def main():
                         direccion = (0, 0)
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero)
+                        refrescar_tablero(screen, tablero, img_jugador)
 
                     if evento.key == pygame.K_ESCAPE:
                         estado = ESTADO_INICIO
@@ -430,7 +434,7 @@ def main():
             # La variable RETRASO hace que si no han pasado esa cantidad de ticks,
             # entonces no se avanzará en el tablero.
             if direccion != (0, 0) and tiempo_actual - tiempo_ultimo_mov >= RETRASO:
-                resultado, pos_jugador = avanzar(tablero, pos_jugador, direccion, sonido_basura)
+                resultado, pos_jugador = avanzar(tablero, pos_jugador, direccion, sonido_manzana)
 
                 if resultado == "derrota":
                     estado = ESTADO_DERROTA
@@ -440,7 +444,18 @@ def main():
                     mostrar_pantalla(screen, PANTALLA_VICTORIA)
                 else:
                     tiempo_ultimo_mov = tiempo_actual
-                    refrescar_tablero(screen, tablero)
+                    
+                    if direccion == (0, -1):
+                        img_jugador = img_arriba
+                    elif direccion == (0, 1):
+                        img_jugador = img_abajo
+                    elif direccion == (-1, 0):
+                        img_jugador = img_izquierda
+                    elif direccion == (1, 0):
+                        img_jugador = img_derecha
+
+                    refrescar_tablero(screen, tablero, img_jugador)
+
 
     pygame.quit()
 
