@@ -120,8 +120,26 @@ def escalar_sprite(imagen, ancho_elem, alto_elem):
         imagen,
         (int(ancho_elem), int(alto_elem))
     )
+LARGO_VICTORIA = 10
+ANCHO_VENTANA= 1040
+ALTO_VENTANA = 800
+LADO_TABLERO = 800
+ANCHO_PANEL = ANCHO_VENTANA - LADO_TABLERO
+def dibujar_panel(screen, fuente, largo):   
+    # Esta función dibuja el panel lateral del juego, donde se muestra la imagen del jugador.
+    panel = pygame.Rect(LADO_TABLERO, 0, ANCHO_PANEL, ALTO_VENTANA)
+    pygame.draw.rect(screen, "gray15", panel)
+    x= LADO_TABLERO + 24
 
-def refrescar_tablero(screen, tablero, img_jugador):
+    titulo = fuente.render("La Rana Roja", True, "white")
+    screen.blit(titulo, (x, 30))
+
+    largo_txt = fuente.render(f"Largo: {largo}", True, "white")
+    screen.blit(largo_txt, (x, 100))
+
+    meta_txt = fuente.render(f"Meta: {LARGO_VICTORIA}", True, "yellow")
+    screen.blit(meta_txt, (x, 140))
+def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
     """
     Dibuja el estado actual del tablero en la pantalla.
 
@@ -144,10 +162,11 @@ def refrescar_tablero(screen, tablero, img_jugador):
     # como el ancho (screen.get_width()) por la cantidad de filas y columnas respectivamente.
     # Por ejemplo en este caso alto_elem sería 800 / 15 = 53.3, lo que nos indica que la
     # altura de cada elemento es de 53.3 píxeles.
-    alto_elem = screen.get_height() / FILAS
-    ancho_elem = screen.get_width() / COLUMNAS
+    alto_elem = LADO_TABLERO / FILAS
+    ancho_elem = LADO_TABLERO / COLUMNAS
     # Como el jugador es un círculo, se necesita el radio.
     radio = ancho_elem / 2
+    
 
     # Ajustamos el tamaño de las imágenes para que encajen exactamente
     # dentro de cada casilla del tablero, evitando que se vean demasiado
@@ -185,7 +204,7 @@ def refrescar_tablero(screen, tablero, img_jugador):
             # ya hayamos recorrido para avanzar al siguiente.
             pos_x += ancho_elem
         pos_y += alto_elem
-
+    dibujar_panel(screen, fuente, len(pos_jugador))
     # Refresca el contenido que se ve en pantalla.
     pygame.display.flip()
 
@@ -359,13 +378,13 @@ def main():
     pygame.init()
 
     # Establecemos la resolución de la pantalla.
-    screen = pygame.display.set_mode((600, 600))
+    screen = pygame.display.set_mode((ANCHO_VENTANA, ALTO_VENTANA))
 
     # Establecemos el título de la ventana.
     pygame.display.set_caption("La Rana Roja")
 
     running = True
-
+    fuente = pygame.font.Font(None, 36)
     estado = ESTADO_INICIO
     tablero = []
     pos_jugador = (0, 0)
@@ -404,7 +423,7 @@ def main():
                         # Obtiene tiempo en milisegundos
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, img_jugador)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
                     elif evento.key == pygame.K_i:
                         estado = ESTADO_INSTRUCCIONES
                         mostrar_pantalla(screen, PANTALLA_INSTRUCCIONES)
@@ -419,7 +438,7 @@ def main():
                         direccion = (0, 0)
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, img_jugador)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
 
                     if evento.key == pygame.K_ESCAPE:
                         estado = ESTADO_INICIO
@@ -454,7 +473,7 @@ def main():
                     elif direccion == (1, 0):
                         img_jugador = img_derecha
 
-                    refrescar_tablero(screen, tablero, img_jugador)
+                    refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
 
 
     pygame.quit()
