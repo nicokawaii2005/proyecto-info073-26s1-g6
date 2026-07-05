@@ -1,0 +1,8 @@
+- Se añadió animación de crecimiento a la rana
+- Se añadieron obstaculos que aumentan tamaño de la rana (Orugas y moscas)
+- Se añadió la puerta de victoria, en la cual solo se puede entrar (y ganar) al tener 1-2 puntos de tamaño de la rana
+- Se implementó el comando randint del repositorio random, con el proposito de dar aleatoriedad a varias funciones
+- Aleatoriedad del numero de aparición de obstaculos (Entre 10 y 12 por item)
+- Aleatoriedad del puntaje inicial del tamaño de la rana
+- Implementación de interfaz con datos de la partida de juego (Cuanto puntaje queda para ganar, reglas, entre otros)
+- Implementación de puntaje de juego (Puede oscilar entre 1 y 10)
