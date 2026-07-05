@@ -161,13 +161,14 @@ def dibujar_panel(screen, fuente, tamano):
         screen.blit(meta_txt, (x, 150))
         screen.blit(i_txt, (x, 180))    
         screen.blit(j_txt, (x, 210))
-    instrucciones1_txt = fuente.render(f"Si llegas a 10", True, "green")
+    instrucciones1_txt = fuente.render(f"Si llegas a sobre 10", True, "green")
     instrucciones2_txt = fuente.render(f"puntos de tamaño", True, "green")
     instrucciones3_txt = fuente.render(f"explotarás!", True, "green")
     instrucciones4_txt = fuente.render(f"Evita pasar al borde", True, "gray")
     instrucciones5_txt = fuente.render(f"del tablero, o caeras!", True, "gray")
     instrucciones6_txt = fuente.render(f"Si pierdes todo tu", True, "red")
     instrucciones7_txt = fuente.render(f"puntaje, perderás!", True, "red")
+    instrucciones8_txt = fuente.render(f"¡Tu puedes!", True, "yellow")
     screen.blit(instrucciones1_txt, (x, 260))
     screen.blit(instrucciones2_txt, (x, 290))
     screen.blit(instrucciones3_txt, (x, 320))
@@ -175,7 +176,7 @@ def dibujar_panel(screen, fuente, tamano):
     screen.blit(instrucciones5_txt, (x, 400))
     screen.blit(instrucciones6_txt, (x, 450))
     screen.blit(instrucciones7_txt, (x, 480))
-
+    screen.blit(instrucciones8_txt, (x, 560))
 def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana):
     """
     Dibuja el estado actual del tablero en la pantalla.
@@ -349,12 +350,15 @@ def avanzar(tablero, pos_jugador, direccion, sonido_manzana, tamano_rana):
         aparecer_aleatorio(tablero, BASURA)
 
     if pos_elem == MOSCA:
-        tamano_rana= tamano_rana + 1
         if tamano_rana >= 10:
             return "derrota", pos_jugador, tamano_rana
+        else:
+            tamano_rana= tamano_rana + 1
         aparecer_aleatorio(tablero, MOSCA)
     if pos_elem == ORUGA:
-        if tamano_rana > 1:
+        if tamano_rana >= 10:
+            return "derrota", pos_jugador, tamano_rana
+        else:
             tamano_rana= tamano_rana + 1
         aparecer_aleatorio(tablero, ORUGA)
     if pos_elem == PUERTA:
