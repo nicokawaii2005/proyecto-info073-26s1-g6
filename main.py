@@ -1,7 +1,7 @@
 # Importamos módulos requeridos
 import os
 import random
-
+from random import randint
 import pygame
 
 # Estados del juego
@@ -28,8 +28,10 @@ RETRASO = 200
 VACIO = 0
 OBSTACULO = 1
 JUGADOR = 2
-MANZANA = 3
-
+MOSCA = 3
+BASURA= 4
+PUERTA= 5
+ORUGA= 6
 # Tamaño del tablero
 # Si se cambian estas constantes, se debe modificar la definición
 # del tablero que se encuentra en función reiniciar().
@@ -42,9 +44,6 @@ BORDE = (
     + [(0, f) for f in range(1, FILAS - 1)]
     + [(COLUMNAS - 1, f) for f in range(1, FILAS - 1)]
 )
-
-# Configuración de obstáculos
-CANT_OBSTACULOS = 5
 
 def aparecer_aleatorio(tablero, id_elem, incluir_borde=True):
     """
@@ -102,16 +101,21 @@ def aparecer_aleatorio(tablero, id_elem, incluir_borde=True):
     return columna, fila
 
 
-def poblar_tablero(tablero):
+def poblar_tablero(tablero, cant_obstaculos):
     """
     Coloca un obstáculo y la manzana en el tablero.
 
     Parámetros:
         - tablero: El tablero con sus posiciones actuales.
+        - cant_obstaculos: La cantidad de obstáculos a colocar (Al azar entre 10 y 12).
     """
-    for i in range (CANT_OBSTACULOS):
+    for i in range (cant_obstaculos):
         aparecer_aleatorio(tablero, OBSTACULO, incluir_borde=False)
-    aparecer_aleatorio(tablero, MANZANA)
+        aparecer_aleatorio(tablero, MOSCA, incluir_borde=False)
+        aparecer_aleatorio(tablero, ORUGA, incluir_borde=False)
+    for j in range (randint(2,3)):
+        aparecer_aleatorio(tablero, BASURA, incluir_borde=False)
+    aparecer_aleatorio(tablero, PUERTA, incluir_borde=False)
 
 def escalar_sprite(imagen, ancho_elem, alto_elem):
     # Esta función ajusta una imagen al tamaño de las casillas del tablero.
@@ -120,32 +124,71 @@ def escalar_sprite(imagen, ancho_elem, alto_elem):
         imagen,
         (int(ancho_elem), int(alto_elem))
     )
+
+def escalar_jugador(imagen, ancho_jugador, alto_jugador):
+    # Esta función ajusta una imagen al tamaño de las casillas del tablero.
+    # Sin esto, las imágenes o sprites cargados podrían no aparecer dentro del juego.
+    return pygame.transform.scale(
+        imagen,
+        (int(ancho_jugador), int(alto_jugador))
+    )
 LARGO_VICTORIA = 10
-ANCHO_VENTANA= 1040
+ANCHO_VENTANA= 1070
 ALTO_VENTANA = 800
 LADO_TABLERO = 800
 ANCHO_PANEL = ANCHO_VENTANA - LADO_TABLERO
-def dibujar_panel(screen, fuente, largo):   
+def dibujar_panel(screen, fuente, tamano):   
     # Esta función dibuja el panel lateral del juego, donde se muestra la imagen del jugador.
     panel = pygame.Rect(LADO_TABLERO, 0, ANCHO_PANEL, ALTO_VENTANA)
-    pygame.draw.rect(screen, "gray15", panel)
-    x= LADO_TABLERO + 24
+    pygame.draw.rect(screen, "cyan4", panel)
+    x= LADO_TABLERO + 5
 
-    titulo = fuente.render("La Rana Roja", True, "white")
-    screen.blit(titulo, (x, 30))
+    titulo = fuente.render("La Rana Roja", True, "red")
+    screen.blit(titulo, (830, 30))
 
-    largo_txt = fuente.render(f"Largo: {largo}", True, "white")
-    screen.blit(largo_txt, (x, 100))
+    tamano_txt = fuente.render(f"Puntaje de tu rana: {tamano}", True, "yellow")
+    screen.blit(tamano_txt, (x, 100))
 
-    meta_txt = fuente.render(f"Meta: {LARGO_VICTORIA}", True, "yellow")
-    screen.blit(meta_txt, (x, 140))
-def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
+    if tamano == 1 or tamano == 2:
+        meta1_txt = fuente.render(f"¡Ya puedes atravesar", True, "blue")
+        meta2_txt = fuente.render(f"la puerta!", True, "blue")
+        screen.blit(meta1_txt, (x, 170))
+        screen.blit(meta2_txt, (x, 200))
+    else:
+        meta_txt = fuente.render(f"Para ganar, debes", True, "blue")
+        i_txt = fuente.render(f"perder {tamano-2}", True, "blue")
+        j_txt = fuente.render(f"puntos de tu tamaño", True, "blue")
+        screen.blit(meta_txt, (x, 150))
+        screen.blit(i_txt, (x, 180))    
+        screen.blit(j_txt, (x, 210))
+    instrucciones1_txt = fuente.render(f"Si llegas a 10", True, "green")
+    instrucciones2_txt = fuente.render(f"puntos de tamaño", True, "green")
+    instrucciones3_txt = fuente.render(f"explotarás!", True, "green")
+    instrucciones4_txt = fuente.render(f"Evita pasar al borde", True, "gray")
+    instrucciones5_txt = fuente.render(f"del tablero, o caeras!", True, "gray")
+    instrucciones6_txt = fuente.render(f"Si pierdes todo tu", True, "red")
+    instrucciones7_txt = fuente.render(f"puntaje, perderás!", True, "red")
+    screen.blit(instrucciones1_txt, (x, 260))
+    screen.blit(instrucciones2_txt, (x, 290))
+    screen.blit(instrucciones3_txt, (x, 320))
+    screen.blit(instrucciones4_txt, (x, 370))
+    screen.blit(instrucciones5_txt, (x, 400))
+    screen.blit(instrucciones6_txt, (x, 450))
+    screen.blit(instrucciones7_txt, (x, 480))
+
+def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana):
     """
     Dibuja el estado actual del tablero en la pantalla.
 
     Parámetros:
         - screen: La pantalla sobre la cual estamos dibujando.
         - tablero: El tablero con sus posiciones actuales.
+        - fuente: La fuente para renderizar texto.
+        - img_jugador: La imagen del jugador.
+        - pos_jugador: La posición del jugador.
+        - tamano_rana: El tamaño de la rana.
+        - alto_rana: El alto de la rana.
+        - ancho_rana: El ancho de la rana.
     """
 
     # Rellena la pantalla con el color gris, básicamente pintando
@@ -155,7 +198,10 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
     #Definicion de diseños de elementos en el tablero
     wall = pygame.image.load("assets/sprites/wall.jpeg").convert()
     floor = pygame.image.load("assets/sprites/floor.jpg").convert()
-    apple = pygame.image.load("assets/sprites/basura.png").convert_alpha()
+    mosca = pygame.image.load("assets/sprites/mosca.png").convert_alpha()
+    basura = pygame.image.load("assets/sprites/basura.png").convert_alpha()
+    puerta = pygame.image.load("assets/sprites/puerta.png").convert_alpha()
+    oruga = pygame.image.load("assets/sprites/oruga.png").convert_alpha()
 
     # Podemos calcular el tamaño en pixeles que tendrá cada
     # casilla al dividir tanto la altura de la pantalla (screen.get_height())
@@ -166,7 +212,6 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
     ancho_elem = LADO_TABLERO / COLUMNAS
     # Como el jugador es un círculo, se necesita el radio.
     radio = ancho_elem / 2
-    
 
     # Ajustamos el tamaño de las imágenes para que encajen exactamente
     # dentro de cada casilla del tablero, evitando que se vean demasiado
@@ -175,8 +220,14 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
     # las imágenes de algunos objetos dentro del juego)
     wall = escalar_sprite(wall, ancho_elem, alto_elem)
     floor = escalar_sprite(floor, ancho_elem, alto_elem)
-    apple = escalar_sprite(apple, ancho_elem, alto_elem)
-    img_jugador = escalar_sprite(img_jugador, ancho_elem, alto_elem)
+    mosca = escalar_sprite(mosca, ancho_elem, alto_elem)
+    basura = escalar_sprite(basura, ancho_elem, alto_elem)
+    puerta = escalar_sprite(puerta, ancho_elem, alto_elem)
+    oruga = escalar_sprite(oruga, ancho_elem, alto_elem)
+    factor = 1 + (tamano_rana-1) * 0.08
+    ancho_jugador = ancho_elem * factor
+    alto_jugador = alto_elem * factor
+    img_jugador = escalar_jugador(img_jugador, ancho_jugador, alto_jugador)
 
     # Posición en eje "y" en unidad de píxeles.
     pos_y = 0
@@ -185,18 +236,25 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
         # Posición en eje "x" en unidad de píxeles.
         pos_x = 0
         for j in range(COLUMNAS):
-            if tablero[i][j] == OBSTACULO:
-                # Dibuja un rectángulo en la posición (pos_x, pos_y) y que sea
-                # de tamaño (ancho_elem, alto_elem) y color negro.
-                screen.blit(wall, (pos_x, pos_y))
-            elif tablero[i][j] == JUGADOR:
+            if tablero[i][j] == JUGADOR:
                 # Dibujamos un círculo verde en la posición (pos_x + radio, pos_y + radio),
                 # con un radio definido por la variable "radio" (ancho_elem / 2).
                 screen.blit(floor, (pos_x, pos_y))
-                screen.blit(img_jugador, (pos_x, pos_y))
-            elif tablero[i][j] == MANZANA:
+                x= pos_x + (ancho_elem - ancho_jugador) / 2
+                y= pos_y + (alto_elem - alto_jugador) / 2
+                screen.blit(img_jugador, (x, y))
+            elif tablero[i][j] == MOSCA:
                 screen.blit(floor, [pos_x, pos_y])
-                screen.blit(apple, [pos_x, pos_y])
+                screen.blit(mosca, [pos_x, pos_y])
+            elif tablero[i][j] == BASURA:
+                screen.blit(floor, [pos_x, pos_y])
+                screen.blit(basura, [pos_x, pos_y])
+            elif tablero[i][j] == PUERTA:
+                screen.blit(floor, [pos_x, pos_y])
+                screen.blit(puerta, [pos_x, pos_y])
+            elif tablero[i][j] == ORUGA:
+                screen.blit(floor, [pos_x, pos_y])
+                screen.blit(oruga, [pos_x, pos_y])
             else:
                 screen.blit(floor, [pos_x, pos_y])
             # Estamos recorriendo los píxeles de la pantalla, por lo que
@@ -204,7 +262,7 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador):
             # ya hayamos recorrido para avanzar al siguiente.
             pos_x += ancho_elem
         pos_y += alto_elem
-    dibujar_panel(screen, fuente, len(pos_jugador))
+    dibujar_panel(screen, fuente, tamano_rana)
     # Refresca el contenido que se ve en pantalla.
     pygame.display.flip()
 
@@ -248,7 +306,7 @@ def cambiar_direccion(keys, direccion_actual):
     return direccion_actual
 
 
-def avanzar(tablero, pos_jugador, direccion, sonido_manzana):
+def avanzar(tablero, pos_jugador, direccion, sonido_manzana, tamano_rana):
     """
     Avanza el jugador un paso en la dirección dada.
 
@@ -257,12 +315,13 @@ def avanzar(tablero, pos_jugador, direccion, sonido_manzana):
         - pos_jugador: Tupla con la posición actual (índice con
             estructura (columna, fila)) del jugador en el tablero.
         - direccion: Tupla con la dirección en la que está avanzando actualmente el jugador.
+        - alto_jugador: El alto del jugador.
+        - ancho_jugador: El ancho del jugador.
 
     Retorna:
         - (resultado, nueva_pos_jugador): Retorna el resultado que se obtiene
             al avanzar (derrota, victoria o "ok" (no cambia de pantalla)) y la nueva posición del jugador.
     """
-
     # Obtenemos los componentes "x" e "y" de cada tupla recibida
     # con información de la dirección y posición del jugador.
     dir_col, dir_fila = direccion
@@ -276,23 +335,39 @@ def avanzar(tablero, pos_jugador, direccion, sonido_manzana):
 
     # Verificamos que no haya choque con el borde del tablero.
     if not (0 <= ind_nueva_col < COLUMNAS and 0 <= ind_nueva_fila < FILAS):
-        return "derrota", pos_jugador
+        return "derrota", pos_jugador, tamano_rana
 
     # Obtenemos el elemento que se encuentre en el tablero en la nueva posición del jugador.
     pos_elem = tablero[ind_nueva_fila][ind_nueva_col]
 
-    if pos_elem == OBSTACULO:
-        return "derrota", pos_jugador
+    if pos_elem == BASURA:
+        sonido_manzana.play() # Reproduce sonido al comer
+        if tamano_rana > 1:
+            tamano_rana= tamano_rana - 1
+        else:
+            return "derrota", pos_jugador, tamano_rana
+        aparecer_aleatorio(tablero, BASURA)
 
-    if pos_elem == MANZANA:
-        sonido_manzana.play() # Reproduce sonido de la manzana al comer
-        return "victoria", (ind_nueva_col, ind_nueva_fila)
+    if pos_elem == MOSCA:
+        tamano_rana= tamano_rana + 1
+        if tamano_rana >= 10:
+            return "derrota", pos_jugador, tamano_rana
+        aparecer_aleatorio(tablero, MOSCA)
+    if pos_elem == ORUGA:
+        if tamano_rana > 1:
+            tamano_rana= tamano_rana + 1
+        aparecer_aleatorio(tablero, ORUGA)
+    if pos_elem == PUERTA:
+        if tamano_rana <= 2:
+            return "victoria", pos_jugador, tamano_rana
+        else:
+            return "ok", pos_jugador, tamano_rana
 
     # Movimiento normal, si es que no encontramos manzana ni obstáculo.
     tablero[ind_actual_fila][ind_actual_col] = VACIO
     tablero[ind_nueva_fila][ind_nueva_col] = JUGADOR
 
-    return "ok", (ind_nueva_col, ind_nueva_fila)
+    return "ok", (ind_nueva_col, ind_nueva_fila), tamano_rana
 
 
 def reiniciar():
@@ -339,11 +414,10 @@ def reiniciar():
     # tablero = [[VACIO] * COLUMNAS for _ in range(FILAS)]
     # El _ en el "for" indica que no usamos la variable con la que iteramos.
 
-    poblar_tablero(tablero)
+    poblar_tablero(tablero, randint(10, 12))
 
     # Colocamos al jugador en una posición aleatoria.
     pos_jugador = aparecer_aleatorio(tablero, JUGADOR)
-
     return tablero, pos_jugador
 
 
@@ -390,7 +464,7 @@ def main():
     pos_jugador = (0, 0)
     direccion = (0, 0)
     tiempo_ultimo_mov = 0
-
+    tamano_rana = randint(5, 9)  # Tamaño inicial de la rana
     mostrar_pantalla(screen, PANTALLA_INICIO)
     
     # Sonido de manzana y soundtrack
@@ -423,7 +497,7 @@ def main():
                         # Obtiene tiempo en milisegundos
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
                     elif evento.key == pygame.K_i:
                         estado = ESTADO_INSTRUCCIONES
                         mostrar_pantalla(screen, PANTALLA_INSTRUCCIONES)
@@ -434,11 +508,12 @@ def main():
 
                 elif estado in (ESTADO_DERROTA, ESTADO_VICTORIA):
                     if evento.key == pygame.K_r:
+                        tamano_rana = randint(5, 9)
                         tablero, pos_jugador = reiniciar()
                         direccion = (0, 0)
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
 
                     if evento.key == pygame.K_ESCAPE:
                         estado = ESTADO_INICIO
@@ -453,8 +528,7 @@ def main():
             # La variable RETRASO hace que si no han pasado esa cantidad de ticks,
             # entonces no se avanzará en el tablero.
             if direccion != (0, 0) and tiempo_actual - tiempo_ultimo_mov >= RETRASO:
-                resultado, pos_jugador = avanzar(tablero, pos_jugador, direccion, sonido_manzana)
-
+                resultado, pos_jugador, tamano_rana = avanzar(tablero, pos_jugador, direccion, sonido_manzana, tamano_rana)
                 if resultado == "derrota":
                     estado = ESTADO_DERROTA
                     mostrar_pantalla(screen, PANTALLA_DERROTA)
@@ -472,8 +546,7 @@ def main():
                         img_jugador = img_izquierda
                     elif direccion == (1, 0):
                         img_jugador = img_derecha
-
-                    refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador)
+                    refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
 
 
     pygame.quit()
