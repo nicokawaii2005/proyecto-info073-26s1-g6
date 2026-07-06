@@ -132,6 +132,24 @@ def escalar_jugador(imagen, ancho_jugador, alto_jugador):
         imagen,
         (int(ancho_jugador), int(alto_jugador))
     )
+
+def cargar_sprites():
+    """
+    Carga todas las imágenes del juego una sola vez.
+    Retorna un diccionario con los sprites originales.
+    """
+
+    sprites = {
+        "wall": pygame.image.load("assets/sprites/wall.jpeg").convert(),
+        "floor": pygame.image.load("assets/sprites/floor.jpg").convert(),
+        "mosca": pygame.image.load("assets/sprites/mosca.png").convert_alpha(),
+        "basura": pygame.image.load("assets/sprites/basura.png").convert_alpha(),
+        "puerta": pygame.image.load("assets/sprites/puerta.png").convert_alpha(),
+        "oruga": pygame.image.load("assets/sprites/oruga.png").convert_alpha()
+    }
+
+    return sprites
+
 LARGO_VICTORIA = 10
 ANCHO_VENTANA= 1070
 ALTO_VENTANA = 800
@@ -177,7 +195,7 @@ def dibujar_panel(screen, fuente, tamano):
         screen.blit(instrucciones6_txt, (x, 450))
         screen.blit(instrucciones7_txt, (x, 480))
         screen.blit(instrucciones8_txt, (x, 560))
-def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana):
+def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana, sprites):
     """
     Dibuja el estado actual del tablero en la pantalla.
 
@@ -196,14 +214,6 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_
     # por encima de lo que estaba anteriormente.
     screen.fill("gray30")
 
-    #Definicion de diseños de elementos en el tablero
-    wall = pygame.image.load("assets/sprites/wall.jpeg").convert()
-    floor = pygame.image.load("assets/sprites/floor.jpg").convert()
-    mosca = pygame.image.load("assets/sprites/mosca.png").convert_alpha()
-    basura = pygame.image.load("assets/sprites/basura.png").convert_alpha()
-    puerta = pygame.image.load("assets/sprites/puerta.png").convert_alpha()
-    oruga = pygame.image.load("assets/sprites/oruga.png").convert_alpha()
-
     # Podemos calcular el tamaño en pixeles que tendrá cada
     # casilla al dividir tanto la altura de la pantalla (screen.get_height())
     # como el ancho (screen.get_width()) por la cantidad de filas y columnas respectivamente.
@@ -219,12 +229,12 @@ def refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_
     # grandes o que tapen otros elementos.
     # (Esto me ayudó a resolver el problema de que no aparecieran
     # las imágenes de algunos objetos dentro del juego)
-    wall = escalar_sprite(wall, ancho_elem, alto_elem)
-    floor = escalar_sprite(floor, ancho_elem, alto_elem)
-    mosca = escalar_sprite(mosca, ancho_elem, alto_elem)
-    basura = escalar_sprite(basura, ancho_elem, alto_elem)
-    puerta = escalar_sprite(puerta, ancho_elem, alto_elem)
-    oruga = escalar_sprite(oruga, ancho_elem, alto_elem)
+    wall = escalar_sprite(sprites["wall"], ancho_elem, alto_elem)
+    floor = escalar_sprite(sprites["floor"], ancho_elem, alto_elem)
+    mosca = escalar_sprite(sprites["mosca"], ancho_elem, alto_elem)
+    basura = escalar_sprite(sprites["basura"], ancho_elem, alto_elem)
+    puerta = escalar_sprite(sprites["puerta"], ancho_elem, alto_elem)
+    oruga = escalar_sprite(sprites["oruga"], ancho_elem, alto_elem)
     factor = 1 + (tamano_rana-1) * 0.08
     ancho_jugador = ancho_elem * factor
     alto_jugador = alto_elem * factor
@@ -481,6 +491,8 @@ def main():
     img_izquierda = pygame.image.load("assets/sprites/rana_izquierda.png").convert_alpha()
     img_derecha = pygame.image.load("assets/sprites/rana_derecha.png").convert_alpha()
 
+    sprites = cargar_sprites()
+
     img_jugador = img_arriba
 
     # Este es el bucle principal del juego, todo lo que sucede en el juego
@@ -501,7 +513,7 @@ def main():
                         # Obtiene tiempo en milisegundos
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana, sprites)
                     elif evento.key == pygame.K_i:
                         estado = ESTADO_INSTRUCCIONES
                         mostrar_pantalla(screen, PANTALLA_INSTRUCCIONES)
@@ -517,7 +529,7 @@ def main():
                         direccion = (0, 0)
                         tiempo_ultimo_mov = pygame.time.get_ticks()
                         estado = ESTADO_JUGANDO
-                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
+                        refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana, sprites)
 
                     if evento.key == pygame.K_ESCAPE:
                         estado = ESTADO_INICIO
@@ -550,7 +562,7 @@ def main():
                         img_jugador = img_izquierda
                     elif direccion == (1, 0):
                         img_jugador = img_derecha
-                    refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana)
+                    refrescar_tablero(screen, tablero, fuente, img_jugador, pos_jugador, tamano_rana, sprites)
 
 
     pygame.quit()
